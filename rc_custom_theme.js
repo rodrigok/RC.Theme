@@ -15,16 +15,37 @@ window.rc_custom_theme = () => {
     existingStyle.remove();
   }
 
+  // Selecting a preset overwrites these CONFIG fields; colors in lowercase to match <input type="color"> values
+  const PRESETS = [
+    {
+      name: 'Black & White',
+      CONFIG: {
+        background: '#000000',
+        backgroundLight: '#ffffff',
+        containerBorder: 0,
+        borderRadiusDefault: 10,
+        borderRadiusSmall: 8,
+        borderRadiusAvatar: 30,
+      },
+    },
+    {
+      name: 'Slate',
+      CONFIG: {
+        background: '#25353c',
+        backgroundLight: '#f0f0f0',
+        containerBorder: 0,
+        borderRadiusDefault: 10,
+        borderRadiusSmall: 8,
+        borderRadiusAvatar: 30,
+      },
+    },
+  ];
+
   const DEFAULTS = {
     enabled: false,
     THEME_URL: 'https://raw.githubusercontent.com/rodrigok/RC.Theme/main/theme2.js',
     CONFIG: {
-      background: '#0F0F0F',
-      backgroundLight: '#F0F0F0',
-      containerBorder: 0,
-      borderRadiusDefault: 10,
-      borderRadiusSmall: 8,
-      borderRadiusAvatar: 30,
+      ...PRESETS[0].CONFIG,
       abac: 'none',
     }
   };
@@ -251,24 +272,45 @@ window.rc_custom_theme = () => {
       width: auto;
     }
 
-    #${PANEL_ID} .theme-panel__button {
-      width: 100%;
-      border: 0;
-      border-radius: 6px;
-      padding: 10px 12px;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 600;
+    #${PANEL_ID} .theme-panel__presets {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
     }
 
-    #${PANEL_ID} .theme-panel__button--primary {
-      background: #2f81f7;
-      color: var(--rcx-color-font-default);
-    }
-
-    #${PANEL_ID} .theme-panel__button--secondary {
+    #${PANEL_ID} .theme-panel__preset {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 6px;
+      border: 1px solid var(--rcx-color-stroke-extra-light);
+      border-radius: 8px;
       background: var(--rcx-color-button-background-secondary-default);
       color: var(--rcx-color-font-default);
+      cursor: pointer;
+      font-size: 12px;
+      text-align: left;
+    }
+
+    #${PANEL_ID} .theme-panel__preset:hover {
+      border-color: var(--rcx-color-stroke-light);
+    }
+
+    #${PANEL_ID} .theme-panel__preset[aria-pressed="true"] {
+      border-color: #2f81f7;
+      box-shadow: 0 0 0 1px #2f81f7;
+    }
+
+    #${PANEL_ID} .theme-panel__preset-swatch {
+      display: flex;
+      height: 28px;
+      border: 1px solid var(--rcx-color-stroke-extra-light);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    #${PANEL_ID} .theme-panel__preset-swatch span {
+      flex: 1;
     }
 
     #${PANEL_ID} .theme-panel__hint {
@@ -315,6 +357,18 @@ window.rc_custom_theme = () => {
     `;
   }
 
+  function renderPreset({ name, CONFIG }, index) {
+    return `
+      <button type="button" class="theme-panel__preset" data-preset="${index}" aria-pressed="false">
+        <span class="theme-panel__preset-swatch">
+          <span style="background: ${CONFIG.background}"></span>
+          <span style="background: ${CONFIG.backgroundLight}"></span>
+        </span>
+        <span>${escapeHtml(name)}</span>
+      </button>
+    `;
+  }
+
   const panel = document.createElement('aside');
   panel.id = PANEL_ID;
   panel.innerHTML = `
@@ -342,6 +396,15 @@ window.rc_custom_theme = () => {
           type="text"
           value="${escapeHtml(defaults.THEME_URL)}"
         />
+      </div>
+
+      ${SELECT_FIELDS.map(renderSelect).join('')}
+
+      <div class="theme-panel__group">
+        <span class="theme-panel__label">Preset</span>
+        <div class="theme-panel__presets">
+          ${PRESETS.map(renderPreset).join('')}
+        </div>
       </div>
 
       <div class="theme-panel__group">
@@ -373,14 +436,6 @@ window.rc_custom_theme = () => {
       </div>
 
       ${NUMERIC_FIELDS.map(renderSlider).join('')}
-
-      ${SELECT_FIELDS.map(renderSelect).join('')}
-
-      <div class="theme-panel__group" style="display: flex; gap: 8px;">
-        <button type="button" class="theme-panel__button theme-panel__button--secondary" id="${PANEL_ID}-reset">
-          Reset to Defaults
-        </button>
-      </div>
     </form>
   `;
 
@@ -396,7 +451,7 @@ window.rc_custom_theme = () => {
 
   const form = document.getElementById(`${PANEL_ID}-form`);
   const closeButton = document.getElementById(`${PANEL_ID}-close`);
-  const resetButton = document.getElementById(`${PANEL_ID}-reset`);
+  const presetButtons = panel.querySelectorAll('.theme-panel__preset');
 
   const colorFields = ['background', 'backgroundLight'];
 
@@ -419,12 +474,34 @@ window.rc_custom_theme = () => {
     };
   }
 
+  // Highlights the preset whose values match the form; none when the user has tweaked any of them
+  function updateActivePreset() {
+    const { CONFIG } = getThemePayload();
+    presetButtons.forEach((button) => {
+      const preset = PRESETS[button.dataset.preset];
+      const active = Object.entries(preset.CONFIG).every(
+        ([name, value]) => String(CONFIG[name]).toLowerCase() === String(value).toLowerCase()
+      );
+      button.setAttribute('aria-pressed', String(active));
+    });
+  }
+
+  function setFieldValue(name, value) {
+    form.elements[name].value = value;
+    const hint = panel.querySelector(`.theme-panel__hint[data-for="${name}"]`);
+    if (hint) {
+      const unit = NUMERIC_FIELDS.find((field) => field.name === name)?.unit || '';
+      hint.textContent = `${value}${unit}`;
+    }
+  }
+
   function saveThemeConfig() {
     try {
       window.onThemeConfigSave(getThemePayload());
     } catch (error) {
       console.error('Error running onThemeConfigSave:', error);
     }
+    updateActivePreset();
   }
 
   form.elements.themeUrl.addEventListener('blur', () => {
@@ -456,29 +533,15 @@ window.rc_custom_theme = () => {
     form.elements[name].addEventListener('change', saveThemeConfig);
   });
 
-  resetButton.addEventListener('click', () => {
-    // form.elements.enabled.checked = DEFAULTS.enabled;
-    form.elements.themeUrl.value = DEFAULTS.THEME_URL;
-
-    colorFields.forEach((name) => {
-      form.elements[name].value = DEFAULTS.CONFIG[name];
-      const hint = panel.querySelector(`.theme-panel__hint[data-for="${name}"]`);
-      if (hint) hint.textContent = DEFAULTS.CONFIG[name];
+  presetButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const preset = PRESETS[button.dataset.preset];
+      Object.entries(preset.CONFIG).forEach(([name, value]) => setFieldValue(name, value));
+      saveThemeConfig();
     });
-
-    NUMERIC_FIELDS.forEach(({ name, unit }) => {
-      form.elements[name].value = DEFAULTS.CONFIG[name];
-      const hint = panel.querySelector(`.theme-panel__hint[data-for="${name}"]`);
-      if (hint) hint.textContent = `${DEFAULTS.CONFIG[name]}${unit}`;
-    });
-
-    SELECT_FIELDS.forEach(({ name }) => {
-      form.elements[name].value = DEFAULTS.CONFIG[name];
-    });
-
-    delete window.applyCustomTheme2;
-    saveThemeConfig();
   });
+
+  updateActivePreset();
 
   closeButton.addEventListener('click', () => {
     closeThemePanel();
