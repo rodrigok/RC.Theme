@@ -274,10 +274,15 @@ ${options.abac && options.abac !== 'none' ? `
     display: none;
 }
 
-#sidebar-region, #main-content [data-qa-rc-room], .rcx-banner, .rcx-vertical-bar:not(:has(.rcx-thread-view)), .rcx-sidepanel {
+#sidebar-region, #main-content [data-qa-rc-room], #main-content > section, .rcx-banner, .rcx-vertical-bar:not(:has(.rcx-thread-view)), .rcx-sidepanel {
     border-radius: var(--rcx-border-radius-default);
     overflow: hidden;
     border: var(--rcx-container-border) !important;
+}
+
+/* Pages (home, admin, marketplace...) get the room surface; their tint background is translucent in this theme */
+#main-content > section, #main-content > section > section {
+    background-color: var(--rcx-color-surface-room) !important;
 }
 
 .rcx-vertical-bar.rcx-vertical-bar[aria-labelledby="contextualbarTitle"], :not(.rcx-vertical-bar) > * > * > .rcx-vertical-bar.rcx-thread-view {
