@@ -20,39 +20,16 @@ Files are served straight from the `main` branch through `raw.githubusercontent.
 
 | File | Purpose |
 | --- | --- |
+| `custom_script.js` | Loader that goes into the workspace's Custom Script setting. Fetches `rc_custom_theme.js` from this repo and runs it. |
 | `rc_custom_theme.js` | Defines `window.rc_custom_theme()`. Builds the config panel, saves settings to `localStorage`, and loads/applies the theme. |
 | `theme2.js` | Defines `window.applyCustomTheme2(options)`. Generates the theme CSS from the options and injects it into the page. |
-| `inject.js` | Snippet to paste into the DevTools console to test `theme2.js` directly, bypassing the panel. Fill in `CONFIG` before running it. |
 
 ## Installation
 
 1. Go to **Administration → Workspace → Settings → Layout → Custom scripts**.
-2. Paste the code below into **Custom script for logged in users** and save.
+2. Paste the contents of [`custom_script.js`](custom_script.js) into **Custom script for logged in users** and save.
 
-```js
-// Code added by Rodrigo Nascimento on March 20th 2026
-// Loads the custom theme from https://github.com/rodrigok/RC.Theme
-
-if (!window.rc_custom_theme_code) {
-	(async () => {
-		const SCRIPT_URL = 'https://raw.githubusercontent.com/rodrigok/RC.Theme/main/rc_custom_theme.js';
-
-		const r = await fetch(SCRIPT_URL, { cache: 'no-store' });
-		if (!r.ok) throw new Error(`Failed to load ${SCRIPT_URL}: ${r.status}`);
-
-		window.rc_custom_theme_code = await r.text();
-
-		// Run it in the page context
-		(0, eval)(window.rc_custom_theme_code);
-
-		rc_custom_theme();
-
-		console.log('Theme loaded:', SCRIPT_URL);
-	})();
-}
-```
-
-This works with Rocket.Chat's default Content-Security-Policy, which allows `connect-src *` and `'unsafe-eval'`.
+The loader works with Rocket.Chat's default Content-Security-Policy, which allows `connect-src *` and `'unsafe-eval'`.
 
 ## Usage
 
