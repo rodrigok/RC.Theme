@@ -18,7 +18,7 @@ window.rc_custom_theme = () => {
   // Selecting a preset overwrites these CONFIG fields; colors in lowercase to match <input type="color"> values
   const PRESETS = [
     {
-      name: 'Black & White',
+      name: 'Mono',
       CONFIG: {
         background: '#000000',
         backgroundLight: '#ffffff',
@@ -39,11 +39,34 @@ window.rc_custom_theme = () => {
         borderRadiusAvatar: 30,
       },
     },
+    {
+      name: 'Midnight',
+      CONFIG: {
+        background: '#0f172a',
+        backgroundLight: '#eef2f7',
+        containerBorder: 0,
+        borderRadiusDefault: 10,
+        borderRadiusSmall: 8,
+        borderRadiusAvatar: 30,
+      },
+    },
+    {
+      name: 'Plum',
+      CONFIG: {
+        background: '#231a2e',
+        backgroundLight: '#f4f0f7',
+        containerBorder: 0,
+        borderRadiusDefault: 10,
+        borderRadiusSmall: 8,
+        borderRadiusAvatar: 30,
+      },
+    },
   ];
+
+  const THEME_URL = 'https://raw.githubusercontent.com/rodrigok/RC.Theme/main/theme2.js';
 
   const DEFAULTS = {
     enabled: false,
-    THEME_URL: 'https://raw.githubusercontent.com/rodrigok/RC.Theme/main/theme2.js',
     CONFIG: {
       ...PRESETS[0].CONFIG,
       abac: 'none',
@@ -79,7 +102,7 @@ window.rc_custom_theme = () => {
 
   const defaults = getDefaults();
 
-  async function loadTheme(THEME_URL) {
+  async function loadTheme() {
     delete window.rc_theme_code;
 
     const r = await fetch(THEME_URL, { cache: 'no-store' });
@@ -104,7 +127,7 @@ window.rc_custom_theme = () => {
     const payload = getDefaults();
     if (payload.enabled) {
       if (!window.applyCustomTheme2) {
-        await loadTheme(payload.THEME_URL || DEFAULTS.THEME_URL);
+        await loadTheme();
       }
       applyCustomTheme2(payload.CONFIG);
     }
@@ -193,14 +216,26 @@ window.rc_custom_theme = () => {
       color: var(--rcx-color-font-default);
     }
 
-    #${PANEL_ID} .theme-panel__input,
+    #${PANEL_ID} .theme-panel__section {
+      margin: 16px 0 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--rcx-color-stroke-light);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    #${PANEL_ID} .theme-panel__row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
     #${PANEL_ID} .theme-panel__checkbox,
     #${PANEL_ID} .theme-panel__color,
     #${PANEL_ID} .theme-panel__select {
       width: 100%;
     }
 
-    #${PANEL_ID} input[type="text"],
     #${PANEL_ID} select {
       padding: 8px;
       border: 1px solid var(--rcx-color-stroke-extra-light);
@@ -230,7 +265,6 @@ window.rc_custom_theme = () => {
       outline: none;
     }
 
-    #${PANEL_ID} input[type="text"]:focus,
     #${PANEL_ID} input[type="color"]:focus,
     #${PANEL_ID} select:focus {
       border-color: #7aa2ff;
@@ -274,7 +308,7 @@ window.rc_custom_theme = () => {
 
     #${PANEL_ID} .theme-panel__presets {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 8px;
     }
 
@@ -387,17 +421,6 @@ window.rc_custom_theme = () => {
         </label>
       </div>
 
-      <div class="theme-panel__group">
-        <label class="theme-panel__label" for="${PANEL_ID}-theme-url">THEME_URL</label>
-        <input
-          class="theme-panel__input"
-          id="${PANEL_ID}-theme-url"
-          name="themeUrl"
-          type="text"
-          value="${escapeHtml(defaults.THEME_URL)}"
-        />
-      </div>
-
       ${SELECT_FIELDS.map(renderSelect).join('')}
 
       <div class="theme-panel__group">
@@ -407,31 +430,35 @@ window.rc_custom_theme = () => {
         </div>
       </div>
 
-      <div class="theme-panel__group">
-        <label class="theme-panel__label" for="${PANEL_ID}-background">Background Dark</label>
-        <div class="theme-panel__color-row">
-          <input
-            class="theme-panel__color"
-            id="${PANEL_ID}-background"
-            name="background"
-            type="color"
-            value="${defaults.CONFIG.background}"
-          />
-          <div class="theme-panel__hint" data-for="background">${defaults.CONFIG.background}</div>
+      <div class="theme-panel__section">Customize</div>
+
+      <div class="theme-panel__row">
+        <div class="theme-panel__group">
+          <label class="theme-panel__label" for="${PANEL_ID}-background">Background Dark</label>
+          <div class="theme-panel__color-row">
+            <input
+              class="theme-panel__color"
+              id="${PANEL_ID}-background"
+              name="background"
+              type="color"
+              value="${defaults.CONFIG.background}"
+            />
+            <div class="theme-panel__hint" data-for="background">${defaults.CONFIG.background}</div>
+          </div>
         </div>
-      </div>
-      
-      <div class="theme-panel__group">
-        <label class="theme-panel__label" for="${PANEL_ID}-backgroundLight">Background Light</label>
-        <div class="theme-panel__color-row">
-          <input
-            class="theme-panel__color"
-            id="${PANEL_ID}-backgroundLight"
-            name="backgroundLight"
-            type="color"
-            value="${defaults.CONFIG.backgroundLight}"
-          />
-          <div class="theme-panel__hint" data-for="backgroundLight">${defaults.CONFIG.backgroundLight}</div>
+
+        <div class="theme-panel__group">
+          <label class="theme-panel__label" for="${PANEL_ID}-backgroundLight">Background Light</label>
+          <div class="theme-panel__color-row">
+            <input
+              class="theme-panel__color"
+              id="${PANEL_ID}-backgroundLight"
+              name="backgroundLight"
+              type="color"
+              value="${defaults.CONFIG.backgroundLight}"
+            />
+            <div class="theme-panel__hint" data-for="backgroundLight">${defaults.CONFIG.backgroundLight}</div>
+          </div>
         </div>
       </div>
 
@@ -469,7 +496,6 @@ window.rc_custom_theme = () => {
 
     return {
       enabled: form.elements.enabled.checked,
-      THEME_URL: form.elements.themeUrl.value.trim(),
       CONFIG,
     };
   }
@@ -503,11 +529,6 @@ window.rc_custom_theme = () => {
     }
     updateActivePreset();
   }
-
-  form.elements.themeUrl.addEventListener('blur', () => {
-    delete window.applyCustomTheme2;
-    saveThemeConfig()
-  });
 
   form.elements.enabled.addEventListener('change', saveThemeConfig);
 

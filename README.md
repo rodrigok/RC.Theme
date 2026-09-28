@@ -43,9 +43,8 @@ Changes apply immediately and are saved in the browser's `localStorage`, so they
 | Option | Default | Description |
 | --- | --- | --- |
 | Enable theme | off | Turns the theme on or off. |
-| THEME_URL | `https://raw.githubusercontent.com/rodrigok/RC.Theme/main/theme2.js` | Where the theme file is loaded from. Clear it to go back to the default. |
 | ABAC | `none` | Room classification frame: `top-secret` (orange) or `unclassified` (green). |
-| Preset | Black & White | Predefined themes. Selecting one resets every option below it. |
+| Preset | Mono | Predefined themes. Selecting one resets every option in the **Customize** section below it. |
 | Background Dark | `#000000` | Base background color in dark mode. |
 | Background Light | `#ffffff` | Base background color in light mode. |
 | Container Border | `0px` | Container border width (0–5px). |
@@ -57,18 +56,24 @@ Changes apply immediately and are saved in the browser's `localStorage`, so they
 
 | Preset | Background Dark | Background Light | Border | Radius (Default / Small / Avatar) |
 | --- | --- | --- | --- | --- |
-| Black & White | `#000000` | `#ffffff` | `0px` | `10px` / `8px` / `30%` |
+| Mono | `#000000` | `#ffffff` | `0px` | `10px` / `8px` / `30%` |
 | Slate | `#25353c` | `#f0f0f0` | `0px` | `10px` / `8px` / `30%` |
+| Midnight | `#0f172a` | `#eef2f7` | `0px` | `10px` / `8px` / `30%` |
+| Plum | `#231a2e` | `#f4f0f7` | `0px` | `10px` / `8px` / `30%` |
 
 The selected preset stays highlighted while the options match it. Tweaking any of them turns it into a custom setup, and selecting a preset again resets them. To add a preset, add an entry to `PRESETS` in `rc_custom_theme.js`.
-
-`THEME_URL` is editable, so you can try a new version of the theme without touching the workspace's Custom Script. Point it at another branch (`.../RC.Theme/my-branch/theme2.js`) or at a local server while developing.
 
 ## Publishing changes
 
 Push to `main`. `raw.githubusercontent.com` caches files for up to 5 minutes, and the code is also cached in the page (`window.rc_custom_theme_code`), so users get the new version the next time they reload Rocket.Chat after the cache expires.
 
-Everything on `main` goes live for every user, so test on a branch first via `THEME_URL`.
+Everything on `main` goes live for every user, so test on a branch first. With the theme enabled, run this in the DevTools console on Rocket.Chat and then change any option in the panel to apply the branch's `theme2.js`:
+
+```js
+(0, eval)(await (await fetch('https://raw.githubusercontent.com/rodrigok/RC.Theme/my-branch/theme2.js', { cache: 'no-store' })).text());
+```
+
+Reloading the page goes back to `main`.
 
 ## Notes
 
