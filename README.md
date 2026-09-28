@@ -14,6 +14,8 @@ Custom Script (admin)
                  └─ injects <style id="theme-2"> into the page
 ```
 
+The theme follows the mode Rocket.Chat is rendering, not the operating system. It reads the mode from the `main-palette-<mode>` style tag Rocket.Chat fills, and re-applies itself whenever that changes.
+
 Files are served straight from the `main` branch through `raw.githubusercontent.com`.
 
 ## Files
@@ -38,10 +40,11 @@ The theme starts **disabled**. To turn it on:
 1. Hold **Cmd** (macOS) or **Ctrl** (Windows/Linux) and click your avatar in the navigation bar.
 2. In the **Theme Config** panel, check **Enable theme**.
 
-Changes apply immediately and are saved in the browser's `localStorage`, so they are per user and per browser.
+Changes apply immediately and are saved in the browser's `localStorage`, so they are per user and per browser. **Appearance** is the exception: it's saved to the user's Rocket.Chat account.
 
 | Option | Default | Description |
 | --- | --- | --- |
+| Appearance | Rocket.Chat's current setting | Auto, Light or Dark. The same setting as **Theme** under **Accessibility & appearance** in the account preferences, saved through `users.setPreferences`. Works with the theme on or off. High contrast isn't offered because the theme has no styles for it. |
 | Enable theme | off | Turns the theme on or off. |
 | ABAC | `none` | Room classification frame: `top-secret` (orange) or `unclassified` (green). |
 | Preset | Mono + Soft | Two rows of predefined options: colors and shape. Selecting one resets the matching options in the **Customize** section below. |

@@ -1,6 +1,9 @@
 window.applyCustomTheme2 = function(options = {}) {
+    // options.mode is the mode Rocket.Chat is rendering; fall back to the user preference when it isn't known
     const pref = Meteor?.user()?.settings?.preferences?.themeAppearence || 'auto';
-    const dark = pref == 'dark' || (pref == 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    const dark = options.mode
+        ? options.mode === 'dark'
+        : pref == 'dark' || (pref == 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
     console.log('Theme', dark ? 'dark' : 'light');
 
     var ABAC_Labels = {
@@ -47,15 +50,15 @@ window.applyCustomTheme2 = function(options = {}) {
     --rcx-color-shadow-elevation-border: var(--rcx-color-stroke-extra-light) !important;
 }
 
+${dark ? `` : `
 /* 2. Override values for light mode */
-@media (prefers-color-scheme: light) {
-    :root, .rcx-content--main, .rcx-sidebar--main, .rcx-sidepanel, .rcx-navbar, .rcx-tile, .rcx-sidebar-rail {
-        --rcx-color-ascent-color: #000000;
-        --rcx-color-descent-color: #FFFFFF;
+:root, .rcx-content--main, .rcx-sidebar--main, .rcx-sidepanel, .rcx-navbar, .rcx-tile, .rcx-sidebar-rail {
+    --rcx-color-ascent-color: #000000;
+    --rcx-color-descent-color: #FFFFFF;
 
-        --rcx-color-surface-root: ${options.backgroundLight} !important;
-    }
+    --rcx-color-surface-root: ${options.backgroundLight} !important;
 }
+`}
 
 ${options.abac && options.abac !== 'none' ? `
 #main-content {

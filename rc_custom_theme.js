@@ -79,6 +79,39 @@ window.rc_custom_theme = () => {
     { name: 'abac', label: 'ABAC', options: ['none', 'top-secret', 'unclassified'] },
   ];
 
+  // Rocket.Chat's own theme preference; high-contrast is left out since the theme has no styles for it
+  const APPEARANCES = [
+    { value: 'auto', label: 'Auto' },
+    { value: 'light', label: 'Light' },
+    { value: 'dark', label: 'Dark' },
+  ];
+
+  function getAppearance() {
+    return window.Meteor?.user()?.settings?.preferences?.themeAppearence || 'auto';
+  }
+
+  // Same call the Accessibility page makes; Rocket.Chat then switches its palette live
+  async function saveAppearance(value) {
+    const storage = localStorage.getItem('Meteor.loginToken') ? localStorage : sessionStorage;
+    const r = await fetch(`${document.baseURI.replace(/\/$/, '')}/api/v1/users.setPreferences`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-User-Id': storage.getItem('Meteor.userId'),
+        'X-Auth-Token': storage.getItem('Meteor.loginToken'),
+      },
+      body: JSON.stringify({ data: { themeAppearence: value } }),
+    });
+    if (!r.ok) throw new Error(`Failed to save appearance: ${r.status}`);
+  }
+
+  // Mode Rocket.Chat is rendering. Fuselage keeps a main-palette-<mode> style tag for every mode used
+  // so far and only fills the active one, so pick the tag with content
+  function getThemeMode() {
+    const tag = [...document.querySelectorAll('style[id^="main-palette-"]')].find((el) => el.hasChildNodes());
+    return tag ? tag.id.replace('main-palette-', '') : null;
+  }
+
   function getDefaults() {
     try {
       const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -111,20 +144,33 @@ window.rc_custom_theme = () => {
     }
   }
 
+  let appliedMode = null;
+
   async function applyTheme() {
-    let styleTag = document.getElementById("theme-2");
-    if (styleTag) {
-      document.head.removeChild(styleTag)
+    appliedMode = getThemeMode();
+
+    if (getDefaults().enabled && !window.applyCustomTheme2) {
+      await loadTheme();
     }
+
+    // Remove only after the await: applyCustomTheme2 toggles the tag off when it already exists,
+    // so overlapping calls would otherwise cancel each other out
+    document.getElementById('theme-2')?.remove();
 
     const payload = getDefaults();
     if (payload.enabled) {
-      if (!window.applyCustomTheme2) {
-        await loadTheme();
-      }
-      applyCustomTheme2(payload.CONFIG);
+      applyCustomTheme2({ ...payload.CONFIG, mode: getThemeMode() });
     }
   }
+
+  // Re-apply when Rocket.Chat switches modes: from this panel, the Accessibility page, or the OS in auto
+  window.rc_custom_theme_observer?.disconnect();
+  window.rc_custom_theme_observer = new MutationObserver(() => {
+    if (getThemeMode() !== appliedMode) {
+      applyTheme();
+    }
+  });
+  window.rc_custom_theme_observer.observe(document.head, { childList: true, subtree: true });
 
   // Saves the settings and re-applies the theme; define window.onThemeConfigSave beforehand to override
   if (typeof window.onThemeConfigSave !== 'function') {
@@ -299,6 +345,35 @@ window.rc_custom_theme = () => {
       width: auto;
     }
 
+    #${PANEL_ID} .theme-panel__segmented {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      padding: 3px;
+      border: 1px solid var(--rcx-color-stroke-extra-light);
+      border-radius: 8px;
+      background: var(--rcx-color-button-background-secondary-default);
+    }
+
+    #${PANEL_ID} .theme-panel__segment {
+      padding: 6px 8px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--rcx-color-font-default);
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    #${PANEL_ID} .theme-panel__segment:hover {
+      background: #00000033;
+    }
+
+    #${PANEL_ID} .theme-panel__segment[aria-pressed="true"] {
+      background: #2f81f7;
+      color: #ffffff;
+    }
+
     #${PANEL_ID} .theme-panel__presets {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -456,6 +531,15 @@ window.rc_custom_theme = () => {
 
     <form class="theme-panel__body" id="${PANEL_ID}-form">
       <div class="theme-panel__group">
+        <span class="theme-panel__label">Appearance</span>
+        <div class="theme-panel__segmented">
+          ${APPEARANCES.map(({ value, label }) => `
+            <button type="button" class="theme-panel__segment" data-appearance="${value}" aria-pressed="false">${label}</button>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="theme-panel__group">
         <label class="theme-panel__check-row">
           <input type="checkbox" name="enabled" ${defaults.enabled ? 'checked' : ''} />
           <span>Enable theme</span>
@@ -513,6 +597,8 @@ window.rc_custom_theme = () => {
   document.body.appendChild(panel);
 
   function openThemePanel() {
+    // The preference may have changed elsewhere (e.g. the Accessibility page) since the panel was built
+    updateAppearanceButtons(getAppearance());
     panel.style.display = 'flex';
   }
 
@@ -523,6 +609,27 @@ window.rc_custom_theme = () => {
   const form = document.getElementById(`${PANEL_ID}-form`);
   const closeButton = document.getElementById(`${PANEL_ID}-close`);
   const presetButtons = panel.querySelectorAll('.theme-panel__preset');
+  const appearanceButtons = panel.querySelectorAll('.theme-panel__segment');
+
+  function updateAppearanceButtons(value) {
+    appearanceButtons.forEach((button) => {
+      button.setAttribute('aria-pressed', String(button.dataset.appearance === value));
+    });
+  }
+
+  appearanceButtons.forEach((button) => {
+    button.addEventListener('click', async () => {
+      updateAppearanceButtons(button.dataset.appearance);
+      try {
+        await saveAppearance(button.dataset.appearance);
+      } catch (error) {
+        console.error('Error saving appearance:', error);
+        updateAppearanceButtons(getAppearance());
+      }
+    });
+  });
+
+  updateAppearanceButtons(getAppearance());
 
   const colorFields = ['background', 'backgroundLight'];
 
