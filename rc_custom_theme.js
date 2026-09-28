@@ -1,9 +1,10 @@
 window.rc_custom_theme = () => {
   const PANEL_ID = 'custom-theme-config-panel';
   const STYLE_ID = 'custom-theme-config-panel-style';
+  // Key name kept from the gist era so users don't lose their saved settings
   const STORAGE_KEY = 'gist_theme2';
 
-  // Evita duplicar o painel
+  // Avoid duplicating the panel
   const existing = document.getElementById(PANEL_ID);
   if (existing) {
     existing.remove();
@@ -16,8 +17,7 @@ window.rc_custom_theme = () => {
 
   const DEFAULTS = {
     enabled: false,
-    GIST_ID: 'd8123818f79ad0bd4a651e48a5ccb73a',
-    FILENAME: 'theme2.js',
+    THEME_URL: 'https://raw.githubusercontent.com/rodrigok/RC.Theme/main/theme2.js',
     CONFIG: {
       background: '#0F0F0F',
       backgroundLight: '#F0F0F0',
@@ -29,7 +29,7 @@ window.rc_custom_theme = () => {
     }
   };
 
-  // Campos numéricos do CONFIG exibidos como slider
+  // Numeric CONFIG fields rendered as sliders
   const NUMERIC_FIELDS = [
     { name: 'containerBorder', label: 'Container Border', min: 0, max: 5, step: 1, unit: 'px' },
     { name: 'borderRadiusDefault', label: 'Border Radius (Default)', min: 0, max: 40, step: 1, unit: 'px' },
@@ -37,7 +37,7 @@ window.rc_custom_theme = () => {
     { name: 'borderRadiusAvatar', label: 'Border Radius (Avatar)', min: 0, max: 100, step: 1, unit: '%' },
   ];
 
-  // Campos do CONFIG exibidos como select
+  // CONFIG fields rendered as selects
   const SELECT_FIELDS = [
     { name: 'abac', label: 'ABAC', options: ['none', 'top-secret', 'unclassified'] },
   ];
@@ -58,28 +58,19 @@ window.rc_custom_theme = () => {
 
   const defaults = getDefaults();
 
-  async function loadTheme(GIST_ID, FILENAME) {
+  async function loadTheme(THEME_URL) {
     delete window.rc_theme_code;
 
-    const r = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-      headers: { 'Accept': 'application/vnd.github+json' },
-      cache: 'no-store'
-    });
-    if (!r.ok) throw new Error('Failed to load gist meta: ' + r.status);
-    const data = await r.json();
-    const file = data.files?.[FILENAME];
-    if (!file) throw new Error(`File ${FILENAME} not found in gist`);
-    const code = file.truncated
-      ? await (await fetch(file.raw_url, { cache: 'no-store' })).text()
-      : file.content;
+    const r = await fetch(THEME_URL, { cache: 'no-store' });
+    if (!r.ok) throw new Error(`Failed to load ${THEME_URL}: ${r.status}`);
 
-    window.rc_theme_code = code;
+    window.rc_theme_code = await r.text();
 
     // Run it in the page context
     (0, eval)(window.rc_theme_code);
 
     if (window.applyCustomTheme2) {
-      console.log('Gist executed:', FILENAME);
+      console.log('Theme executed:', THEME_URL);
     }
   }
 
@@ -92,16 +83,16 @@ window.rc_custom_theme = () => {
     const payload = getDefaults();
     if (payload.enabled) {
       if (!window.applyCustomTheme2) {
-        await loadTheme(payload.GIST_ID, payload.FILENAME);
+        await loadTheme(payload.THEME_URL || DEFAULTS.THEME_URL);
       }
       applyCustomTheme2(payload.CONFIG);
     }
   }
 
-  // Função que você vai implementar depois
+  // Saves the settings and re-applies the theme; define window.onThemeConfigSave beforehand to override
   if (typeof window.onThemeConfigSave !== 'function') {
     window.onThemeConfigSave = function (payload) {
-      console.log('Salvar configuração do tema:', payload);
+      console.log('Saving theme config:', payload);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
       applyTheme();
     };
@@ -343,24 +334,13 @@ window.rc_custom_theme = () => {
       </div>
 
       <div class="theme-panel__group">
-        <label class="theme-panel__label" for="${PANEL_ID}-gist-id">GIST_ID</label>
+        <label class="theme-panel__label" for="${PANEL_ID}-theme-url">THEME_URL</label>
         <input
           class="theme-panel__input"
-          id="${PANEL_ID}-gist-id"
-          name="gistId"
+          id="${PANEL_ID}-theme-url"
+          name="themeUrl"
           type="text"
-          value="${escapeHtml(defaults.GIST_ID)}"
-        />
-      </div>
-
-      <div class="theme-panel__group">
-        <label class="theme-panel__label" for="${PANEL_ID}-filename">FILENAME</label>
-        <input
-          class="theme-panel__input"
-          id="${PANEL_ID}-filename"
-          name="filename"
-          type="text"
-          value="${escapeHtml(defaults.FILENAME)}"
+          value="${escapeHtml(defaults.THEME_URL)}"
         />
       </div>
 
@@ -434,8 +414,7 @@ window.rc_custom_theme = () => {
 
     return {
       enabled: form.elements.enabled.checked,
-      GIST_ID: form.elements.gistId.value.trim(),
-      FILENAME: form.elements.filename.value.trim(),
+      THEME_URL: form.elements.themeUrl.value.trim(),
       CONFIG,
     };
   }
@@ -444,15 +423,11 @@ window.rc_custom_theme = () => {
     try {
       window.onThemeConfigSave(getThemePayload());
     } catch (error) {
-      console.error('Erro ao executar onThemeConfigSave:', error);
+      console.error('Error running onThemeConfigSave:', error);
     }
   }
 
-  form.elements.gistId.addEventListener('blur', () => {
-    delete window.applyCustomTheme2;
-    saveThemeConfig()
-  });
-  form.elements.filename.addEventListener('blur', () => {
+  form.elements.themeUrl.addEventListener('blur', () => {
     delete window.applyCustomTheme2;
     saveThemeConfig()
   });
@@ -483,8 +458,7 @@ window.rc_custom_theme = () => {
 
   resetButton.addEventListener('click', () => {
     // form.elements.enabled.checked = DEFAULTS.enabled;
-    form.elements.gistId.value = DEFAULTS.GIST_ID;
-    form.elements.filename.value = DEFAULTS.FILENAME;
+    form.elements.themeUrl.value = DEFAULTS.THEME_URL;
 
     colorFields.forEach((name) => {
       form.elements[name].value = DEFAULTS.CONFIG[name];

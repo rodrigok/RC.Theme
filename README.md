@@ -1,99 +1,91 @@
 # RC.Theme
 
-Tema customizado para o Rocket.Chat, aplicado pelo **Custom Script** do workspace. Não precisa alterar o servidor nem fazer build: o script injeta o CSS em tempo de execução e cada usuário ajusta cores, bordas e raios por um painel de configuração.
+Custom theme for Rocket.Chat, applied through the workspace's **Custom Script** setting. No server changes or builds are needed: the script injects the CSS at runtime, and each user adjusts colors, borders and radii from a config panel.
 
-## Como funciona
+## How it works
 
 ```
 Custom Script (admin)
-  └─ busca rc_custom_theme.js no gist e executa rc_custom_theme()
-       ├─ cria o painel "Theme Config" (Cmd/Ctrl + clique no avatar)
-       ├─ lê as preferências do localStorage (chave gist_theme2)
-       └─ se o tema estiver habilitado:
-            └─ busca theme2.js no gist e executa applyCustomTheme2(CONFIG)
-                 └─ injeta <style id="theme-2"> na página
+  └─ fetches rc_custom_theme.js from this repo and runs rc_custom_theme()
+       ├─ creates the "Theme Config" panel (Cmd/Ctrl + click on the avatar)
+       ├─ reads the user's settings from localStorage (key gist_theme2)
+       └─ if the theme is enabled:
+            └─ fetches theme2.js from this repo and runs applyCustomTheme2(CONFIG)
+                 └─ injects <style id="theme-2"> into the page
 ```
 
-Os arquivos são carregados pela API de gists do GitHub, a partir do gist [`d8123818f79ad0bd4a651e48a5ccb73a`](https://gist.github.com/rodrigok/d8123818f79ad0bd4a651e48a5ccb73a).
+Files are served straight from the `main` branch through `raw.githubusercontent.com`.
 
-## Arquivos
+## Files
 
-| Arquivo | Função |
+| File | Purpose |
 | --- | --- |
-| `rc_custom_theme.js` | Define `window.rc_custom_theme()`. Monta o painel de configuração, salva as preferências no `localStorage` e carrega/aplica o tema. |
-| `theme2.js` | Define `window.applyCustomTheme2(options)`. Gera o CSS do tema a partir das opções e injeta na página. |
-| `inject.js` | Snippet para colar no console do DevTools e testar o `theme2.js` direto, sem passar pelo painel. Preencha o `CONFIG` antes de rodar. |
+| `rc_custom_theme.js` | Defines `window.rc_custom_theme()`. Builds the config panel, saves settings to `localStorage`, and loads/applies the theme. |
+| `theme2.js` | Defines `window.applyCustomTheme2(options)`. Generates the theme CSS from the options and injects it into the page. |
+| `inject.js` | Snippet to paste into the DevTools console to test `theme2.js` directly, bypassing the panel. Fill in `CONFIG` before running it. |
 
-## Instalação
+## Installation
 
-1. Acesse **Administration → Workspace → Settings → Layout → Custom scripts**.
-2. Cole o código abaixo em **Custom script for logged in users** e salve.
+1. Go to **Administration → Workspace → Settings → Layout → Custom scripts**.
+2. Paste the code below into **Custom script for logged in users** and save.
 
 ```js
 // Code added by Rodrigo Nascimento on March 20th 2026
+// Loads the custom theme from https://github.com/rodrigok/RC.Theme
 
 if (!window.rc_custom_theme_code) {
 	(async () => {
-		const GIST_ID = 'd8123818f79ad0bd4a651e48a5ccb73a';
-		const FILENAME = 'rc_custom_theme.js';
-	
-		const r = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-			headers: { 'Accept': 'application/vnd.github+json' },
-			cache: 'no-store'
-		});
-		if (!r.ok) throw new Error('Failed to load gist meta: ' + r.status);
-		const data = await r.json();
-		const file = data.files?.[FILENAME];
-		if (!file) throw new Error(`File ${FILENAME} not found in gist`);
-		const code = file.truncated
-			? await (await fetch(file.raw_url, { cache: 'no-store' })).text()
-			: file.content;
-			
-		window.rc_custom_theme_code = code;
-		
+		const SCRIPT_URL = 'https://raw.githubusercontent.com/rodrigok/RC.Theme/main/rc_custom_theme.js';
+
+		const r = await fetch(SCRIPT_URL, { cache: 'no-store' });
+		if (!r.ok) throw new Error(`Failed to load ${SCRIPT_URL}: ${r.status}`);
+
+		window.rc_custom_theme_code = await r.text();
+
 		// Run it in the page context
 		(0, eval)(window.rc_custom_theme_code);
 
 		rc_custom_theme();
 
-		console.log('Gist executed:', FILENAME);
+		console.log('Theme loaded:', SCRIPT_URL);
 	})();
 }
 ```
 
-## Uso
+This works with Rocket.Chat's default Content-Security-Policy, which allows `connect-src *` and `'unsafe-eval'`.
 
-O tema começa **desabilitado**. Para ligar:
+## Usage
 
-1. Segure **Cmd** (macOS) ou **Ctrl** (Windows/Linux) e clique no seu avatar na barra de navegação.
-2. No painel **Theme Config**, marque **Enable theme**.
+The theme starts **disabled**. To turn it on:
 
-As alterações são aplicadas na hora e ficam salvas no `localStorage` do navegador, ou seja, valem por usuário e por navegador.
+1. Hold **Cmd** (macOS) or **Ctrl** (Windows/Linux) and click your avatar in the navigation bar.
+2. In the **Theme Config** panel, check **Enable theme**.
 
-| Opção | Padrão | Descrição |
+Changes apply immediately and are saved in the browser's `localStorage`, so they are per user and per browser.
+
+| Option | Default | Description |
 | --- | --- | --- |
-| Enable theme | desligado | Liga ou desliga o tema. |
-| GIST_ID | `d8123818f79ad0bd4a651e48a5ccb73a` | Gist de onde o tema é carregado. |
-| FILENAME | `theme2.js` | Arquivo do tema dentro do gist. |
-| Background Dark | `#0F0F0F` | Cor de fundo base no modo escuro. |
-| Background Light | `#F0F0F0` | Cor de fundo base no modo claro. |
-| Container Border | `0px` | Espessura da borda dos containers (0–5px). |
-| Border Radius (Default) | `10px` | Raio dos containers, mensagens e campos (0–40px). |
-| Border Radius (Small) | `8px` | Raio de itens menores, como opções de menu (0–40px). |
-| Border Radius (Avatar) | `30%` | Raio dos avatares (0–100%). |
-| ABAC | `none` | Moldura de classificação da sala: `top-secret` (laranja) ou `unclassified` (verde). |
+| Enable theme | off | Turns the theme on or off. |
+| THEME_URL | `https://raw.githubusercontent.com/rodrigok/RC.Theme/main/theme2.js` | Where the theme file is loaded from. |
+| Background Dark | `#0F0F0F` | Base background color in dark mode. |
+| Background Light | `#F0F0F0` | Base background color in light mode. |
+| Container Border | `0px` | Container border width (0–5px). |
+| Border Radius (Default) | `10px` | Radius for containers, messages and inputs (0–40px). |
+| Border Radius (Small) | `8px` | Radius for smaller items, like menu options (0–40px). |
+| Border Radius (Avatar) | `30%` | Avatar radius (0–100%). |
+| ABAC | `none` | Room classification frame: `top-secret` (orange) or `unclassified` (green). |
 
-**Reset to Defaults** restaura todos os valores, exceto o **Enable theme**.
+**Reset to Defaults** restores every value except **Enable theme**.
 
-Como `GIST_ID` e `FILENAME` são editáveis, dá para testar uma versão nova do tema apontando para outro gist ou arquivo, sem mexer no Custom Script do workspace.
+`THEME_URL` is editable, so you can try a new version of the theme without touching the workspace's Custom Script. Point it at another branch (`.../RC.Theme/my-branch/theme2.js`) or at a local server while developing.
 
-## Publicando alterações
+## Publishing changes
 
-O Rocket.Chat carrega os arquivos **do gist, não deste repositório**. Depois de alterar `rc_custom_theme.js` ou `theme2.js` aqui, copie o conteúdo para o arquivo correspondente no gist.
+Push to `main`. `raw.githubusercontent.com` caches files for up to 5 minutes, and the code is also cached in the page (`window.rc_custom_theme_code`), so users get the new version the next time they reload Rocket.Chat after the cache expires.
 
-O código fica em cache na página (`window.rc_custom_theme_code`), então é preciso recarregar o Rocket.Chat para pegar a versão nova.
+Everything on `main` goes live for every user, so test on a branch first via `THEME_URL`.
 
-## Observações
+## Notes
 
-- A API do GitHub sem autenticação aceita 60 requisições por hora por IP. Cada carregamento de página faz uma requisição, ou duas com o tema habilitado. Em redes onde muitos usuários saem pelo mesmo IP, o limite pode ser atingido e o tema deixa de carregar até a janela resetar.
-- O tema depende das classes CSS do Fuselage (`.rcx-*`) e da estrutura atual do DOM. Atualizações do Rocket.Chat podem quebrar partes do layout.
+- Files come from `raw.githubusercontent.com`, not the GitHub REST API, so the REST API's 60 requests/hour limit for unauthenticated calls doesn't apply. GitHub may still throttle heavy unauthenticated traffic.
+- The theme relies on Fuselage CSS classes (`.rcx-*`) and the current DOM structure. Rocket.Chat updates may break parts of the layout.
