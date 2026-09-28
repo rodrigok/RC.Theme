@@ -742,19 +742,27 @@ window.rc_custom_theme = () => {
 
   const CONFIG_BUTTON_SELECTOR = '.rcx-navbar .rcx-navbar-group .rcx-button:has(.rcx-avatar), .rcx-sidebar-rail .rcx-navbar-group .rcx-button:has(.rcx-avatar)';
 
-  document.addEventListener('click', (event) => {
-    const configButton = event.target.closest(CONFIG_BUTTON_SELECTOR);
-
-    if (!configButton) {
+  // Cmd/Ctrl + click on the avatar opens the panel. Rocket.Chat's user menu opens on pointerdown (react-aria's press
+  // start), so the whole press sequence is swallowed in the capture phase, before it reaches React
+  function handleConfigButtonPress(event) {
+    if (!(event.metaKey || event.ctrlKey) || !event.target.closest?.(CONFIG_BUTTON_SELECTOR)) {
       return;
     }
 
-    if (event.metaKey || event.ctrlKey) {
-      event.preventDefault();
-      event.stopPropagation();
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (event.type === 'click') {
       openThemePanel();
     }
-  }, true);
+  }
+
+  // Replace the listeners from a previous run instead of stacking them
+  ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click'].forEach((type) => {
+    document.removeEventListener(type, window.rc_custom_theme_press_handler, true);
+    document.addEventListener(type, handleConfigButtonPress, true);
+  });
+  window.rc_custom_theme_press_handler = handleConfigButtonPress;
 
   applyTheme();
 }
