@@ -49,7 +49,7 @@ Changes apply immediately and are saved in the browser's `localStorage`, so they
 | ABAC | None | Room classification frame, picked like a preset: None, Top Secret (orange) or Unclassified (green). Preset rows don't change it. |
 | Preset | Midnight + Outlined | Two rows of predefined options: colors and shape. Selecting one resets the matching options in the **Customize** section below. |
 | Background Dark | `#0f172a` | Base background color in dark mode. |
-| Background Light | `#eef2f7` | Base background color in light mode. |
+| Background Light | `#d4def2` | Base background color in light mode. |
 | Container Border | `1px` | Container border width (0–5px). |
 | Border Radius (Default) | `10px` | Radius for containers, messages and inputs (0–40px). |
 | Border Radius (Small) | `8px` | Radius for smaller items, like menu options (0–40px). |
@@ -63,10 +63,10 @@ The two rows are independent: picking a color preset keeps the current shape, an
 
 | Preset | Background Dark | Background Light |
 | --- | --- | --- |
-| Midnight (default) | `#0f172a` | `#eef2f7` |
+| Midnight (default) | `#0f172a` | `#d4def2` |
 | Mono | `#000000` | `#ffffff` |
-| Slate | `#25353c` | `#f0f0f0` |
-| Plum | `#231a2e` | `#f4f0f7` |
+| Slate | `#25353c` | `#d1e0e6` |
+| Plum | `#231a2e` | `#e4d7ef` |
 
 **Shape** sets the container border and the radii:
 

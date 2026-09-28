@@ -21,7 +21,7 @@ window.rc_custom_theme = () => {
     color: [
       {
         name: 'Midnight',
-        CONFIG: { background: '#0f172a', backgroundLight: '#eef2f7' },
+        CONFIG: { background: '#0f172a', backgroundLight: '#d4def2' },
       },
       {
         name: 'Mono',
@@ -29,11 +29,11 @@ window.rc_custom_theme = () => {
       },
       {
         name: 'Slate',
-        CONFIG: { background: '#25353c', backgroundLight: '#f0f0f0' },
+        CONFIG: { background: '#25353c', backgroundLight: '#d1e0e6' },
       },
       {
         name: 'Plum',
-        CONFIG: { background: '#231a2e', backgroundLight: '#f4f0f7' },
+        CONFIG: { background: '#231a2e', backgroundLight: '#e4d7ef' },
       },
     ],
     shape: [
