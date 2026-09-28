@@ -46,7 +46,7 @@ Changes apply immediately and are saved in the browser's `localStorage`, so they
 | --- | --- | --- |
 | Appearance | Rocket.Chat's current setting | Auto, Light or Dark. The same setting as **Theme** under **Accessibility & appearance** in the account preferences, saved through `users.setPreferences`. Works with the theme on or off. High contrast isn't offered because the theme has no styles for it. |
 | Enable theme | off | Turns the theme on or off. |
-| ABAC | `none` | Room classification frame: `top-secret` (orange) or `unclassified` (green). |
+| ABAC | None | Room classification frame, picked like a preset: None, Top Secret (orange) or Unclassified (green). Preset rows don't change it. |
 | Preset | Midnight + Outlined | Two rows of predefined options: colors and shape. Selecting one resets the matching options in the **Customize** section below. |
 | Background Dark | `#0f172a` | Base background color in dark mode. |
 | Background Light | `#eef2f7` | Base background color in light mode. |

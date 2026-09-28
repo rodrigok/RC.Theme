@@ -16,7 +16,7 @@ window.rc_custom_theme = () => {
   }
 
   // Each row of presets overwrites only its own CONFIG fields; colors in lowercase to match <input type="color"> values.
-  // The first preset of each row is the default
+  // The first color and shape presets are the defaults
   const PRESET_GROUPS = {
     color: [
       {
@@ -54,6 +54,24 @@ window.rc_custom_theme = () => {
         CONFIG: { containerBorder: 0, borderRadiusDefault: 4, borderRadiusSmall: 2, borderRadiusAvatar: 10 },
       },
     ],
+    // Colors match --rcx-room-abac-* in theme2.js
+    abac: [
+      {
+        name: 'None',
+        color: null,
+        CONFIG: { abac: 'none' },
+      },
+      {
+        name: 'Top Secret',
+        color: '#f58c26',
+        CONFIG: { abac: 'top-secret' },
+      },
+      {
+        name: 'Unclassified',
+        color: '#3fb656',
+        CONFIG: { abac: 'unclassified' },
+      },
+    ],
   };
 
   const THEME_URL = 'https://raw.githubusercontent.com/rodrigok/RC.Theme/main/theme2.js';
@@ -73,11 +91,6 @@ window.rc_custom_theme = () => {
     { name: 'borderRadiusDefault', label: 'Border Radius (Default)', min: 0, max: 40, step: 1, unit: 'px' },
     { name: 'borderRadiusSmall', label: 'Border Radius (Small)', min: 0, max: 40, step: 1, unit: 'px' },
     { name: 'borderRadiusAvatar', label: 'Border Radius (Avatar)', min: 0, max: 100, step: 1, unit: '%' },
-  ];
-
-  // CONFIG fields rendered as selects
-  const SELECT_FIELDS = [
-    { name: 'abac', label: 'ABAC', options: ['none', 'top-secret', 'unclassified'] },
   ];
 
   // Rocket.Chat's own theme preference; high-contrast is left out since the theme has no styles for it
@@ -271,27 +284,8 @@ window.rc_custom_theme = () => {
     }
 
     #${PANEL_ID} .theme-panel__checkbox,
-    #${PANEL_ID} .theme-panel__color,
-    #${PANEL_ID} .theme-panel__select {
+    #${PANEL_ID} .theme-panel__color {
       width: 100%;
-    }
-
-    #${PANEL_ID} select {
-      padding: 8px;
-      border: 1px solid var(--rcx-color-stroke-extra-light);
-      background: var(--rcx-color-button-background-secondary-default);
-      color: var(--rcx-color-font-default);
-      border-radius: 6px;
-      outline: none;
-    }
-
-    #${PANEL_ID} select {
-      cursor: pointer;
-    }
-
-    #${PANEL_ID} select option {
-      background: var(--rcx-color-surface-room);
-      color: var(--rcx-color-font-default);
     }
 
     #${PANEL_ID} input[type="color"] {
@@ -305,8 +299,7 @@ window.rc_custom_theme = () => {
       outline: none;
     }
 
-    #${PANEL_ID} input[type="color"]:focus,
-    #${PANEL_ID} select:focus {
+    #${PANEL_ID} input[type="color"]:focus {
       border-color: #7aa2ff;
     }
 
@@ -437,6 +430,24 @@ window.rc_custom_theme = () => {
       opacity: 0.4;
     }
 
+    #${PANEL_ID} .theme-panel__preset-abac {
+      display: flex;
+      height: 28px;
+      padding: 8px 3px 3px;
+      border-radius: 4px;
+    }
+
+    #${PANEL_ID} .theme-panel__preset-abac span {
+      flex: 1;
+      border-radius: 2px;
+      background: var(--rcx-color-surface-room);
+    }
+
+    #${PANEL_ID} .theme-panel__preset-abac--none {
+      padding: 0;
+      border: 1px solid var(--rcx-color-stroke-extra-light);
+    }
+
     #${PANEL_ID} .theme-panel__preset-avatar {
       flex: none;
       width: 16px;
@@ -478,20 +489,6 @@ window.rc_custom_theme = () => {
     `;
   }
 
-  function renderSelect({ name, label, options }) {
-    const value = defaults.CONFIG[name];
-    return `
-      <div class="theme-panel__group">
-        <label class="theme-panel__label" for="${PANEL_ID}-${name}">${label}</label>
-        <select class="theme-panel__select" id="${PANEL_ID}-${name}" name="${name}">
-          ${options.map((option) => `
-            <option value="${escapeHtml(option)}" ${option === value ? 'selected' : ''}>${escapeHtml(option)}</option>
-          `).join('')}
-        </select>
-      </div>
-    `;
-  }
-
   function renderPreset(group, index, name, preview) {
     return `
       <button type="button" class="theme-panel__preset" data-group="${group}" data-preset="${index}" aria-pressed="false">
@@ -516,6 +513,19 @@ window.rc_custom_theme = () => {
       <span class="theme-panel__preset-shape" style="border-width: ${CONFIG.containerBorder}px; border-radius: ${CONFIG.borderRadiusDefault}px">
         <span class="theme-panel__preset-avatar" style="border-radius: ${CONFIG.borderRadiusAvatar}%"></span>
         <span class="theme-panel__preset-bar" style="border-radius: ${CONFIG.borderRadiusSmall}px"></span>
+      </span>
+    `);
+  }
+
+  // Mini room framed in the ABAC color, with the thicker top edge standing in for the label band; None shows the bare room
+  function renderAbacPreset({ name, color }, index) {
+    return renderPreset('abac', index, name, color ? `
+      <span class="theme-panel__preset-abac" style="background: ${color}">
+        <span></span>
+      </span>
+    ` : `
+      <span class="theme-panel__preset-abac theme-panel__preset-abac--none">
+        <span></span>
       </span>
     `);
   }
@@ -547,7 +557,13 @@ window.rc_custom_theme = () => {
         </label>
       </div>
 
-      ${SELECT_FIELDS.map(renderSelect).join('')}
+      <div class="theme-panel__group">
+        <span class="theme-panel__label">ABAC</span>
+        <input type="hidden" name="abac" value="${escapeHtml(defaults.CONFIG.abac)}" />
+        <div class="theme-panel__presets">
+          ${PRESET_GROUPS.abac.map(renderAbacPreset).join('')}
+        </div>
+      </div>
 
       <div class="theme-panel__group">
         <span class="theme-panel__label">Preset</span>
@@ -638,12 +654,10 @@ window.rc_custom_theme = () => {
     const CONFIG = {
       background: form.elements.background.value,
       backgroundLight: form.elements.backgroundLight.value,
+      abac: form.elements.abac.value,
     };
     NUMERIC_FIELDS.forEach(({ name }) => {
       CONFIG[name] = Number(form.elements[name].value);
-    });
-    SELECT_FIELDS.forEach(({ name }) => {
-      CONFIG[name] = form.elements[name].value;
     });
 
     return {
@@ -700,10 +714,6 @@ window.rc_custom_theme = () => {
       if (hint) hint.textContent = `${input.value}${unit}`;
       saveThemeConfig();
     });
-  });
-
-  SELECT_FIELDS.forEach(({ name }) => {
-    form.elements[name].addEventListener('change', saveThemeConfig);
   });
 
   presetButtons.forEach((button) => {
