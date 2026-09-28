@@ -357,6 +357,7 @@ window.rc_custom_theme = () => {
       color: var(--rcx-color-font-default);
       cursor: pointer;
       font-size: 12px;
+      text-align: center; /* Rocket.Chat's global button rule sets text-align: left */
     }
 
     #${PANEL_ID} .theme-panel__segment:hover {
