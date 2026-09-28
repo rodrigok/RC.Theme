@@ -47,10 +47,10 @@ Changes apply immediately and are saved in the browser's `localStorage`, so they
 | Appearance | Rocket.Chat's current setting | Auto, Light or Dark. The same setting as **Theme** under **Accessibility & appearance** in the account preferences, saved through `users.setPreferences`. Works with the theme on or off. High contrast isn't offered because the theme has no styles for it. |
 | Enable theme | off | Turns the theme on or off. |
 | ABAC | `none` | Room classification frame: `top-secret` (orange) or `unclassified` (green). |
-| Preset | Mono + Soft | Two rows of predefined options: colors and shape. Selecting one resets the matching options in the **Customize** section below. |
-| Background Dark | `#000000` | Base background color in dark mode. |
-| Background Light | `#ffffff` | Base background color in light mode. |
-| Container Border | `0px` | Container border width (0–5px). |
+| Preset | Midnight + Outlined | Two rows of predefined options: colors and shape. Selecting one resets the matching options in the **Customize** section below. |
+| Background Dark | `#0f172a` | Base background color in dark mode. |
+| Background Light | `#eef2f7` | Base background color in light mode. |
+| Container Border | `1px` | Container border width (0–5px). |
 | Border Radius (Default) | `10px` | Radius for containers, messages and inputs (0–40px). |
 | Border Radius (Small) | `8px` | Radius for smaller items, like menu options (0–40px). |
 | Border Radius (Avatar) | `30%` | Avatar radius (0–100%). |
@@ -63,19 +63,19 @@ The two rows are independent: picking a color preset keeps the current shape, an
 
 | Preset | Background Dark | Background Light |
 | --- | --- | --- |
+| Midnight (default) | `#0f172a` | `#eef2f7` |
 | Mono | `#000000` | `#ffffff` |
 | Slate | `#25353c` | `#f0f0f0` |
-| Midnight | `#0f172a` | `#eef2f7` |
 | Plum | `#231a2e` | `#f4f0f7` |
 
 **Shape** sets the container border and the radii:
 
 | Preset | Container Border | Radius (Default / Small / Avatar) |
 | --- | --- | --- |
+| Outlined (default) | `1px` | `10px` / `8px` / `30%` |
 | Soft | `0px` | `10px` / `8px` / `30%` |
 | Round | `0px` | `20px` / `14px` / `50%` |
 | Sharp | `0px` | `4px` / `2px` / `10%` |
-| Outlined | `1px` | `10px` / `8px` / `30%` |
 
 In each row, the selected preset stays highlighted while its options match. Tweaking any of them turns that row into a custom setup, and selecting a preset again resets them. To add a preset, add an entry to `PRESET_GROUPS` in `rc_custom_theme.js`.
 

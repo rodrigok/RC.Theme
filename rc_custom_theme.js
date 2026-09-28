@@ -15,9 +15,14 @@ window.rc_custom_theme = () => {
     existingStyle.remove();
   }
 
-  // Each row of presets overwrites only its own CONFIG fields; colors in lowercase to match <input type="color"> values
+  // Each row of presets overwrites only its own CONFIG fields; colors in lowercase to match <input type="color"> values.
+  // The first preset of each row is the default
   const PRESET_GROUPS = {
     color: [
+      {
+        name: 'Midnight',
+        CONFIG: { background: '#0f172a', backgroundLight: '#eef2f7' },
+      },
       {
         name: 'Mono',
         CONFIG: { background: '#000000', backgroundLight: '#ffffff' },
@@ -27,15 +32,15 @@ window.rc_custom_theme = () => {
         CONFIG: { background: '#25353c', backgroundLight: '#f0f0f0' },
       },
       {
-        name: 'Midnight',
-        CONFIG: { background: '#0f172a', backgroundLight: '#eef2f7' },
-      },
-      {
         name: 'Plum',
         CONFIG: { background: '#231a2e', backgroundLight: '#f4f0f7' },
       },
     ],
     shape: [
+      {
+        name: 'Outlined',
+        CONFIG: { containerBorder: 1, borderRadiusDefault: 10, borderRadiusSmall: 8, borderRadiusAvatar: 30 },
+      },
       {
         name: 'Soft',
         CONFIG: { containerBorder: 0, borderRadiusDefault: 10, borderRadiusSmall: 8, borderRadiusAvatar: 30 },
@@ -47,10 +52,6 @@ window.rc_custom_theme = () => {
       {
         name: 'Sharp',
         CONFIG: { containerBorder: 0, borderRadiusDefault: 4, borderRadiusSmall: 2, borderRadiusAvatar: 10 },
-      },
-      {
-        name: 'Outlined',
-        CONFIG: { containerBorder: 1, borderRadiusDefault: 10, borderRadiusSmall: 8, borderRadiusAvatar: 30 },
       },
     ],
   };
