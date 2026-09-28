@@ -366,10 +366,6 @@ html {
     backdrop-filter: blur(4px);
 }
 
-.bubble-visible {
-    top: 52px !important;
-}
-
 .rcx-room-header {
     background: color-mix(var(--rcx-color-surface-room), transparent 10%);
     box-shadow: 0 0 2px 2px #00000022;
@@ -387,12 +383,22 @@ html {
 }
 
 #main-content {
+    .messages-container-main:first-child > div > div:has(.rcx-bubble__group), .messages-container-main:not(:has(.rcx-bubble__group)) > div > div:has(.rcx-bubble):first-child {
+    	margin-top: 44px !important;
+    }
+
+    &:has(.rcx-box--focusable[role=button]) {
+        .messages-container-main > div > div:has(.rcx-bubble__group), .messages-container-main:not(:has(.rcx-bubble__group)) > div > div:has(.rcx-bubble):first-child {
+            margin-top: 92px !important;
+        }
+    }
+
     div:has(>.rcx-box--focusable[role=button]) {
         position: relative;
     }
 
     .rcx-box--focusable[role=button] {
-        margin-top: 50px;
+        margin-top: 48px;
         margin-inline: 6px;
         border-radius: var(--rcx-border-radius-default) !important;
         overflow: hidden;
