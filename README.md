@@ -44,7 +44,7 @@ Changes apply immediately and are saved in the browser's `localStorage`, so they
 | --- | --- | --- |
 | Enable theme | off | Turns the theme on or off. |
 | ABAC | `none` | Room classification frame: `top-secret` (orange) or `unclassified` (green). |
-| Preset | Mono | Predefined themes. Selecting one resets every option in the **Customize** section below it. |
+| Preset | Mono + Soft | Two rows of predefined options: colors and shape. Selecting one resets the matching options in the **Customize** section below. |
 | Background Dark | `#000000` | Base background color in dark mode. |
 | Background Light | `#ffffff` | Base background color in light mode. |
 | Container Border | `0px` | Container border width (0–5px). |
@@ -54,14 +54,27 @@ Changes apply immediately and are saved in the browser's `localStorage`, so they
 
 ### Presets
 
-| Preset | Background Dark | Background Light | Border | Radius (Default / Small / Avatar) |
-| --- | --- | --- | --- | --- |
-| Mono | `#000000` | `#ffffff` | `0px` | `10px` / `8px` / `30%` |
-| Slate | `#25353c` | `#f0f0f0` | `0px` | `10px` / `8px` / `30%` |
-| Midnight | `#0f172a` | `#eef2f7` | `0px` | `10px` / `8px` / `30%` |
-| Plum | `#231a2e` | `#f4f0f7` | `0px` | `10px` / `8px` / `30%` |
+The two rows are independent: picking a color preset keeps the current shape, and vice versa.
 
-The selected preset stays highlighted while the options match it. Tweaking any of them turns it into a custom setup, and selecting a preset again resets them. To add a preset, add an entry to `PRESETS` in `rc_custom_theme.js`.
+**Colors** set the background colors:
+
+| Preset | Background Dark | Background Light |
+| --- | --- | --- |
+| Mono | `#000000` | `#ffffff` |
+| Slate | `#25353c` | `#f0f0f0` |
+| Midnight | `#0f172a` | `#eef2f7` |
+| Plum | `#231a2e` | `#f4f0f7` |
+
+**Shape** sets the container border and the radii:
+
+| Preset | Container Border | Radius (Default / Small / Avatar) |
+| --- | --- | --- |
+| Soft | `0px` | `10px` / `8px` / `30%` |
+| Round | `0px` | `20px` / `14px` / `50%` |
+| Sharp | `0px` | `4px` / `2px` / `10%` |
+| Outlined | `1px` | `10px` / `8px` / `30%` |
+
+In each row, the selected preset stays highlighted while its options match. Tweaking any of them turns that row into a custom setup, and selecting a preset again resets them. To add a preset, add an entry to `PRESET_GROUPS` in `rc_custom_theme.js`.
 
 ## Publishing changes
 

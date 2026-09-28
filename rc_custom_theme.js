@@ -15,60 +15,53 @@ window.rc_custom_theme = () => {
     existingStyle.remove();
   }
 
-  // Selecting a preset overwrites these CONFIG fields; colors in lowercase to match <input type="color"> values
-  const PRESETS = [
-    {
-      name: 'Mono',
-      CONFIG: {
-        background: '#000000',
-        backgroundLight: '#ffffff',
-        containerBorder: 0,
-        borderRadiusDefault: 10,
-        borderRadiusSmall: 8,
-        borderRadiusAvatar: 30,
+  // Each row of presets overwrites only its own CONFIG fields; colors in lowercase to match <input type="color"> values
+  const PRESET_GROUPS = {
+    color: [
+      {
+        name: 'Mono',
+        CONFIG: { background: '#000000', backgroundLight: '#ffffff' },
       },
-    },
-    {
-      name: 'Slate',
-      CONFIG: {
-        background: '#25353c',
-        backgroundLight: '#f0f0f0',
-        containerBorder: 0,
-        borderRadiusDefault: 10,
-        borderRadiusSmall: 8,
-        borderRadiusAvatar: 30,
+      {
+        name: 'Slate',
+        CONFIG: { background: '#25353c', backgroundLight: '#f0f0f0' },
       },
-    },
-    {
-      name: 'Midnight',
-      CONFIG: {
-        background: '#0f172a',
-        backgroundLight: '#eef2f7',
-        containerBorder: 0,
-        borderRadiusDefault: 10,
-        borderRadiusSmall: 8,
-        borderRadiusAvatar: 30,
+      {
+        name: 'Midnight',
+        CONFIG: { background: '#0f172a', backgroundLight: '#eef2f7' },
       },
-    },
-    {
-      name: 'Plum',
-      CONFIG: {
-        background: '#231a2e',
-        backgroundLight: '#f4f0f7',
-        containerBorder: 0,
-        borderRadiusDefault: 10,
-        borderRadiusSmall: 8,
-        borderRadiusAvatar: 30,
+      {
+        name: 'Plum',
+        CONFIG: { background: '#231a2e', backgroundLight: '#f4f0f7' },
       },
-    },
-  ];
+    ],
+    shape: [
+      {
+        name: 'Soft',
+        CONFIG: { containerBorder: 0, borderRadiusDefault: 10, borderRadiusSmall: 8, borderRadiusAvatar: 30 },
+      },
+      {
+        name: 'Round',
+        CONFIG: { containerBorder: 0, borderRadiusDefault: 20, borderRadiusSmall: 14, borderRadiusAvatar: 50 },
+      },
+      {
+        name: 'Sharp',
+        CONFIG: { containerBorder: 0, borderRadiusDefault: 4, borderRadiusSmall: 2, borderRadiusAvatar: 10 },
+      },
+      {
+        name: 'Outlined',
+        CONFIG: { containerBorder: 1, borderRadiusDefault: 10, borderRadiusSmall: 8, borderRadiusAvatar: 30 },
+      },
+    ],
+  };
 
   const THEME_URL = 'https://raw.githubusercontent.com/rodrigok/RC.Theme/main/theme2.js';
 
   const DEFAULTS = {
     enabled: false,
     CONFIG: {
-      ...PRESETS[0].CONFIG,
+      ...PRESET_GROUPS.color[0].CONFIG,
+      ...PRESET_GROUPS.shape[0].CONFIG,
       abac: 'none',
     }
   };
@@ -347,6 +340,38 @@ window.rc_custom_theme = () => {
       flex: 1;
     }
 
+    #${PANEL_ID} .theme-panel__presets + .theme-panel__presets {
+      margin-top: 8px;
+    }
+
+    #${PANEL_ID} .theme-panel__preset-shape {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      height: 28px;
+      padding: 0 5px;
+      border: 0 solid var(--rcx-color-font-default);
+      background: var(--rcx-color-surface-room);
+      overflow: hidden;
+    }
+
+    #${PANEL_ID} .theme-panel__preset-avatar,
+    #${PANEL_ID} .theme-panel__preset-bar {
+      background: var(--rcx-color-font-default);
+      opacity: 0.4;
+    }
+
+    #${PANEL_ID} .theme-panel__preset-avatar {
+      flex: none;
+      width: 16px;
+      height: 16px;
+    }
+
+    #${PANEL_ID} .theme-panel__preset-bar {
+      flex: 1;
+      height: 8px;
+    }
+
     #${PANEL_ID} .theme-panel__hint {
       font-size: 14px;
       font-family: monospace;
@@ -391,16 +416,32 @@ window.rc_custom_theme = () => {
     `;
   }
 
-  function renderPreset({ name, CONFIG }, index) {
+  function renderPreset(group, index, name, preview) {
     return `
-      <button type="button" class="theme-panel__preset" data-preset="${index}" aria-pressed="false">
-        <span class="theme-panel__preset-swatch">
-          <span style="background: ${CONFIG.background}"></span>
-          <span style="background: ${CONFIG.backgroundLight}"></span>
-        </span>
+      <button type="button" class="theme-panel__preset" data-group="${group}" data-preset="${index}" aria-pressed="false">
+        ${preview}
         <span>${escapeHtml(name)}</span>
       </button>
     `;
+  }
+
+  function renderColorPreset({ name, CONFIG }, index) {
+    return renderPreset('color', index, name, `
+      <span class="theme-panel__preset-swatch">
+        <span style="background: ${CONFIG.background}"></span>
+        <span style="background: ${CONFIG.backgroundLight}"></span>
+      </span>
+    `);
+  }
+
+  // Mini container with the preset's border and default radius, holding an avatar and a small-radius bar
+  function renderShapePreset({ name, CONFIG }, index) {
+    return renderPreset('shape', index, name, `
+      <span class="theme-panel__preset-shape" style="border-width: ${CONFIG.containerBorder}px; border-radius: ${CONFIG.borderRadiusDefault}px">
+        <span class="theme-panel__preset-avatar" style="border-radius: ${CONFIG.borderRadiusAvatar}%"></span>
+        <span class="theme-panel__preset-bar" style="border-radius: ${CONFIG.borderRadiusSmall}px"></span>
+      </span>
+    `);
   }
 
   const panel = document.createElement('aside');
@@ -426,7 +467,10 @@ window.rc_custom_theme = () => {
       <div class="theme-panel__group">
         <span class="theme-panel__label">Preset</span>
         <div class="theme-panel__presets">
-          ${PRESETS.map(renderPreset).join('')}
+          ${PRESET_GROUPS.color.map(renderColorPreset).join('')}
+        </div>
+        <div class="theme-panel__presets">
+          ${PRESET_GROUPS.shape.map(renderShapePreset).join('')}
         </div>
       </div>
 
@@ -500,11 +544,11 @@ window.rc_custom_theme = () => {
     };
   }
 
-  // Highlights the preset whose values match the form; none when the user has tweaked any of them
+  // Highlights, in each row, the preset whose values match the form; none when the user has tweaked any of them
   function updateActivePreset() {
     const { CONFIG } = getThemePayload();
     presetButtons.forEach((button) => {
-      const preset = PRESETS[button.dataset.preset];
+      const preset = PRESET_GROUPS[button.dataset.group][button.dataset.preset];
       const active = Object.entries(preset.CONFIG).every(
         ([name, value]) => String(CONFIG[name]).toLowerCase() === String(value).toLowerCase()
       );
@@ -556,7 +600,7 @@ window.rc_custom_theme = () => {
 
   presetButtons.forEach((button) => {
     button.addEventListener('click', () => {
-      const preset = PRESETS[button.dataset.preset];
+      const preset = PRESET_GROUPS[button.dataset.group][button.dataset.preset];
       Object.entries(preset.CONFIG).forEach(([name, value]) => setFieldValue(name, value));
       saveThemeConfig();
     });
