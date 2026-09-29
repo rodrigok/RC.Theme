@@ -397,6 +397,10 @@ html {
 }
 
 #main-content {
+    .rcx-bubble__group {
+        backdrop-filter: blur(4px);
+    }
+
     .messages-container-main:first-child > div > div:has(.rcx-bubble__group), .messages-container-main:not(:has(.rcx-bubble__group)) > div > div:has(.rcx-bubble):first-child {
     	margin-top: 44px !important;
     }
