@@ -80,13 +80,13 @@ ${options.abac && options.abac !== 'none' ? `
         // writing-mode: vertical-lr;
     }
 
-    // &:after {
-    //     content: 'TOP SECRET';
-    //     text-align: center;
-    //     font-weight: 800;
-    //     padding-block: 4px;
-    //     writing-mode: vertical-lr;
-    // }
+    &:after {
+        content: 'TOP SECRET';
+        text-align: center;
+        font-weight: 800;
+        padding-block: 4px;
+        // writing-mode: vertical-lr;
+    }
 
     // [data-qa-rc-room] {
     //     box-shadow: 0 0 4px 4px #00000033;
